@@ -1,5 +1,6 @@
 import psycopg2
-from database import crud
+import crud
+import sys
 
 DATABASE_URL = 'postgresql://mihkon:postgres@localhost:5432/diplomadbv2'
 
@@ -47,5 +48,14 @@ finally:
     print('Соединение с базой данных закрыто')
 '''
 
-parameters = crud.get_parameters()
-print(parameters)
+# parameters = crud.get_parameters()
+# print(parameters)
+# # print([par.par_name for par in parameters])
+# for par in parameters:
+#     print(par)
+
+# param = crud.get_parameter_by_title('Расход жидкого топлива')
+# print(param.id_parameter, param.par_name)
+measurings = crud.get_measurings()
+for m in measurings:
+    print(m)
