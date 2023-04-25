@@ -1,7 +1,9 @@
 import psycopg2
+from database import crud
 
 DATABASE_URL = 'postgresql://mihkon:postgres@localhost:5432/diplomadbv2'
 
+'''
 class Connection():
 
     def __init__(self):
@@ -43,3 +45,7 @@ finally:
     cursor.close()
     connection.close()
     print('Соединение с базой данных закрыто')
+'''
+
+parameters = crud.get_parameters()
+print(parameters)
