@@ -54,8 +54,18 @@ finally:
 # for par in parameters:
 #     print(par)
 
-# param = crud.get_parameter_by_title('Расход жидкого топлива')
+# param = crud.get_parameter_by_name('Расход жидкого топлива')
 # print(param.id_parameter, param.par_name)
-measurings = crud.get_measurings()
-for m in measurings:
-    print(m)
+# measurings = crud.get_measurings()
+# print(len(measurings))
+# for m in measurings:
+#     print(m)
+# crud.create_measuring(param_id=7, equip_id=2, param_value=7.4)
+# measurings = crud.get_measurings()
+# print(len(measurings))
+# for m in measurings:
+#     print(m)
+
+predicts = crud.get_predicts()
+for predict in predicts:
+    print(predict)
