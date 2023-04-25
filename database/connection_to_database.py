@@ -2,6 +2,7 @@ import psycopg2
 import crud
 import sys
 
+# в общем-то тестовый файл для проверки работы с базой данных
 DATABASE_URL = 'postgresql://mihkon:postgres@localhost:5432/diplomadbv2'
 
 '''
@@ -48,11 +49,11 @@ finally:
     print('Соединение с базой данных закрыто')
 '''
 
-# parameters = crud.get_parameters()
+parameters = crud.get_parameters()
 # print(parameters)
 # # print([par.par_name for par in parameters])
-# for par in parameters:
-#     print(par)
+for par in parameters:
+    print(par)
 
 # param = crud.get_parameter_by_name('Расход жидкого топлива')
 # print(param.id_parameter, param.par_name)
@@ -66,6 +67,9 @@ finally:
 # for m in measurings:
 #     print(m)
 
-predicts = crud.get_predicts()
-for predict in predicts:
-    print(predict)
+# predicts = crud.get_predicts()
+# for predict in predicts:
+#     print(predict)
+
+params = crud.get_parameters_list()
+print(params)

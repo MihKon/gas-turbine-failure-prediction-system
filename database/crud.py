@@ -1,4 +1,4 @@
-import models
+from . import models
 from datetime import datetime
 
 
@@ -25,6 +25,16 @@ def get_parameter_by_name(param_name: str):
     return models.Parameters.get(models.Parameters.par_name == param_name)
 
 
+def get_parameters_list():
+    parameters = []
+
+    params = get_parameters()
+    for par in params:
+        parameters.append(par['par_name'])
+
+    return parameters
+
+
 def get_measurings(limit: int = PARAMS_NUM):
     return models.Measurings.select().limit(limit).order_by(
         models.Measurings.id_measuring.desc()
@@ -44,6 +54,7 @@ def create_measuring(param_value: float,
         equip_id = get_equipment_by_name(eq_name=equip_name).id_equipment
     
     measuring_time = datetime.now()
+    
     models.Measurings.create(
         id_parameter=param_id,
         id_equipment=equip_id,
