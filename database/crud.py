@@ -25,6 +25,10 @@ def get_parameter_by_name(param_name: str):
     return models.Parameters.get(models.Parameters.par_name == param_name)
 
 
+def get_parameter_by_id(param_id: int):
+    return models.Parameters.get(models.Parameters.id_parameter == param_id)
+
+
 def get_parameters_list():
     parameters = []
 

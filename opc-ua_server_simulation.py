@@ -39,7 +39,7 @@ for par in PARAMS:
 # старт сервера
 try:
     server.start()
-    print(f'Server has been started at {URL}')
+    print(f'Server is running at {URL}')
 
     while True:
 
@@ -54,6 +54,6 @@ try:
             val_params[par].set_value(val_par)
             print(par, val_par, val_params[par])
 
-        sleep(10)
+        # sleep(10)
 finally:
     server.stop()

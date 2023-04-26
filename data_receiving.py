@@ -1,5 +1,6 @@
 from opcua import Client
 from database import crud
+from time import sleep
 
 URL = 'opc.tcp://localhost:8001/opcua/server/'
 URI = 'http://gas-turbine-power-plant'
@@ -60,6 +61,8 @@ if __name__ == '__main__':
 
                 par_name, eq_name = par.split('_')
                 crud.create_measuring(param_value=val_parameters[par], param_name=par_name, equip_name=eq_name)
+            
+            # sleep(10)
 
     finally:
         client.disconnect()
