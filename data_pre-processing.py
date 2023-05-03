@@ -6,9 +6,9 @@ from pathlib import Path
 
 measurings = crud.get_measurings()
 
-columns = crud.get_parameters_list()    # список
-index = set()                           # множество
-data = {}.fromkeys(columns)             # словарь
+columns = list(map(lambda x: x.split('_')[0], crud.get_parameters_list()))    # список
+index = set()                                                                 # множество
+data = {}.fromkeys(columns)                                                   # словарь
 
 for mes in reversed(measurings):
     par_id = mes['id_parameter']

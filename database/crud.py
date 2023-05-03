@@ -88,3 +88,13 @@ def create_predict(verd: int,
         id_parameter=param_id,
         id_model=model_id
     )
+
+
+def get_models():
+    return models.Models.select().order_by(
+        models.Models.id_model
+    ).dicts()
+
+
+def get_model_by_title(title: str):
+    return models.Models.get(models.Models.title == title)
