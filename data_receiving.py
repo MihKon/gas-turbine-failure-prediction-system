@@ -30,9 +30,8 @@ try:
                 continue
             val_parameters[par] = client.get_node(var_param).get_value()
             print(par, var_param, val_parameters[par])
-
-        # внесение полученных данных в базу данных
-        for par in val_parameters:
+            
+            # внесение полученных данных в базу данных
             eq_name = par.split('_')[1]
             crud.create_measuring(param_value=val_parameters[par], param_name=par, equip_name=eq_name)
             
