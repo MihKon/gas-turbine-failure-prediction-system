@@ -84,7 +84,7 @@ def get_stnd_params():
     ).dicts()
 
 
-def get_id_stnd_par_by_name(name: str):
+def get_stnd_par_by_name(name: str):
     return models.StandardParams.get(models.StandardParams.param_name == name)
 
 
@@ -104,7 +104,7 @@ def create_model(id: int,
                  id_stnd_par: id = None,
                  stnd_par_name: str = None):
     if id_stnd_par is None and stnd_par_name is not None:
-        id_stnd_par = get_id_stnd_par_by_name(stnd_par_name)
+        id_stnd_par = get_stnd_par_by_name(stnd_par_name).id_standard_parameter
     
     models.Models.create(
         id_model=id,
@@ -120,11 +120,13 @@ def get_predict_params():
     ).dicts()
 
 
-def create_predict_params(title: str,
+def create_predict_params(id: int,
+                          title: str,
                           value: float,
                           model_id: int):
     
     models.PredictParams.create(
+        id_predict_param=id,
         param_title=title,
         param_value=value,
         id_model=model_id

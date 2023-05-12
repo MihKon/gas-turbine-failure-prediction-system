@@ -1,6 +1,8 @@
 import psycopg2
-import crud
 import sys
+import tensorflow as tf
+import numpy as np
+from database import crud
 
 # в общем-то тестовый файл для проверки работы с базой данных
 DATABASE_URL = 'postgresql://mihkon:postgres@localhost:5432/diplomadbv2'
@@ -48,12 +50,12 @@ finally:
     connection.close()
     print('Соединение с базой данных закрыто')
 '''
-
-parameters = crud.get_parameters()
+'''
+# parameters = crud.get_parameters()
 # print(parameters)
 # # print([par.par_name for par in parameters])
-for par in parameters:
-    print(par)
+# for par in parameters:
+#     print(par)
 
 # param = crud.get_parameter_by_name('Расход жидкого топлива')
 # print(param.id_parameter, param.par_name)
@@ -71,5 +73,41 @@ for par in parameters:
 # for predict in predicts:
 #     print(predict)
 
-params = crud.get_parameters_list()
-print(params)
+# params = crud.get_parameters_list()
+# print(params)
+'''
+
+
+def set_layer_weights(weight, lr_name, idx, i, model):
+    if type(weight) is np.ndarray:
+        for wght in weight:
+            idx, i = set_layer_weights(wght, lr_name, idx, i, model)
+    else:
+        title = '{}_w{}'.format(lr_name, idx)
+        crud.create_predict_params(i, title, weight, model)
+        idx += 1
+        i += 1
+    
+    return idx, i
+
+
+path_to_file = 'C:\\Users\\miha-\\Desktop\\diplom_program\\models\\Compressor T5 average_24.h5'
+param = path_to_file.split('\\')[-1].split('_')[0]
+model_title = path_to_file.split('\\')[-1]
+print(param)
+# crud.create_model(1, model_title, path_to_file, stnd_par_name=param)
+
+model = tf.keras.models.load_model(path_to_file)
+model_id = crud.get_model_by_title(model_title).id_model
+
+i = 1
+for lr in model.layers:
+    idx = 1
+    for w in lr.get_weights():
+        if type(w) is np.ndarray:
+            idx, i = set_layer_weights(w, lr.name, idx, i, model_id)
+        else:
+            title = '{}_w{}'.format(lr.name, idx)
+            crud.create_predict_params(i, title, w, model_id)
+            idx += 1
+            i += 1
