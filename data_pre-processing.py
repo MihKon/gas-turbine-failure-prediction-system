@@ -1,29 +1,25 @@
 import pandas as pd
+import numpy as np
+from collections import defaultdict
 from sklearn.preprocessing import MinMaxScaler
 from database import crud
 from datetime import datetime
 from pathlib import Path
 
-measurings = crud.get_measurings()
+measurings = crud.get_measurings(39*5)
 
-columns = list(map(lambda x: x.split('_')[0], crud.get_parameters_list()))    # список
-index = set()                                                                 # множество
-data = {}.fromkeys(columns)                                                   # словарь
+data = defaultdict(list) # словарь списков
 
 for mes in reversed(measurings):
     par_id = mes['id_parameter']
-    par_name = crud.get_parameter_by_id(param_id=par_id).par_name
-
-    idx = mes['time_measuring'].strftime('%Y-%m-%d %H:%M:%S')
+    par_name = crud.get_parameter_by_id(param_id=par_id).par_name.split('_')[0]
 
     val = mes['value']
 
-    index.add(idx)
-    data[par_name] = val
+    data[par_name].append(val)
 
-datetime_index = pd.DatetimeIndex(data=index)
 
-frame = pd.DataFrame(data=data, index=datetime_index, dtype='float64')
+frame = pd.DataFrame(data=data, dtype='float64')
 
 # удаление нулевых значений
 frame.dropna(inplace=True)
@@ -36,8 +32,8 @@ final_frame = pd.DataFrame(data=scaler.fit_transform(frame),
 
 path = Path(__file__)
 parent = str(path.parent.parent.absolute())
-path_to_file = ''.join([parent, '\\datasets_to_predict'])
-
+directory = ''.join([parent, '\\datasets_to_predict'])
 file_name = '\\dataset_{}.csv'.format(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+path_to_file = ''.join([directory, file_name])
 
-final_frame.to_csv(''.join([path_to_file, file_name]))
+final_frame.to_csv(path_to_file, index=False)
