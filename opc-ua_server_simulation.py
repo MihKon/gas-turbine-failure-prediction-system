@@ -19,8 +19,10 @@ node = server.get_objects_node()
 
 params = node.add_object(space, 'Parameters')
 val_params = {}
+test_params = pd.read_csv(r'C:\Users\miha-\Desktop\diplom_program\programs\test_datasets\test_dataset1.csv')\
+    .to_dict().keys()
 
-for par in PARAMS:
+for par in test_params:
     par_name = par.split('_')[0]
     val_params[par_name] = params.add_variable(space, '{}'.format(par), 0)
     val_params[par_name].set_writable()
@@ -34,17 +36,15 @@ try:
     print(f'Server is running at {URL}')
 
     #while True:
-    for idx in range(len(test_data)):
+    for idx in range(len(test_data[:5])):
         
-        test_params = test_data[idx].keys()
         for par in val_params:
-            if par in test_params:
-                val_par = test_data[idx][par]
-                val_params[par].set_value(val_par)
-                print(par, val_par, val_params[par])
-            else:
-                continue
+            val_par = test_data[idx][par]
+            val_params[par].set_value(val_par)
+            print(par, val_par, val_params[par])
 
+        print('\n', 'cycle_num:', idx)
         sleep(10)
+
 finally:
     server.stop()
