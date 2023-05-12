@@ -39,6 +39,17 @@ def get_parameters_list():
     return parameters
 
 
+def get_parameter_by_part_name(name: str):
+    params = get_parameters_list()
+    par_name = ''
+
+    for par in params:
+        if par.split('_')[0] == name:
+            par_name = par
+
+    return get_parameter_by_name(par_name)
+
+
 def get_measurings(limit: int = PARAMS_NUM):
     return models.Measurings.select().limit(limit).order_by(
         models.Measurings.id_measuring.desc()
@@ -67,6 +78,59 @@ def create_measuring(param_value: float,
     )
 
 
+def get_stnd_params():
+    return models.StandardParams.select().order_by(
+        models.StandardParams.id_standard_parameter
+    ).dicts()
+
+
+def get_id_stnd_par_by_name(name: str):
+    return models.StandardParams.get(models.StandardParams.param_name == name)
+
+
+def get_models():
+    return models.Models.select().order_by(
+        models.Models.id_model
+    ).dicts()
+
+
+def get_model_by_title(title: str):
+    return models.Models.get(models.Models.title == title)
+
+
+def create_model(id: int,
+                 title: str,
+                 path: str,
+                 id_stnd_par: id = None,
+                 stnd_par_name: str = None):
+    if id_stnd_par is None and stnd_par_name is not None:
+        id_stnd_par = get_id_stnd_par_by_name(stnd_par_name)
+    
+    models.Models.create(
+        id_model=id,
+        title=title,
+        path_to_file=path,
+        id_standard_parameter=id_stnd_par
+    )
+
+
+def get_predict_params():
+    return models.PredictParams.select().order_by(
+        models.PredictParams.id_predict_param
+    ).dicts()
+
+
+def create_predict_params(title: str,
+                          value: float,
+                          model_id: int):
+    
+    models.PredictParams.create(
+        param_title=title,
+        param_value=value,
+        id_model=model_id
+    )
+
+
 def get_predicts():
     return models.Predicts.select().order_by(
         models.Predicts.id_predict.desc()
@@ -88,13 +152,3 @@ def create_predict(verd: int,
         id_parameter=param_id,
         id_model=model_id
     )
-
-
-def get_models():
-    return models.Models.select().order_by(
-        models.Models.id_model
-    ).dicts()
-
-
-def get_model_by_title(title: str):
-    return models.Models.get(models.Models.title == title)
