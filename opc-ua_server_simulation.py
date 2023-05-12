@@ -1,3 +1,4 @@
+import pandas as pd
 from opcua import Server
 from time import sleep
 from random import randint
@@ -19,41 +20,31 @@ node = server.get_objects_node()
 params = node.add_object(space, 'Parameters')
 val_params = {}
 
-'''
-
-далее пойдет назначение параметров турбины
-согласно используемому набору данных:
-
-температура турбины, компрессора,
-выходные напряжения и мощность, ток,
-вибрация и т.д.
-
-'''
-# тест
-# temperature = params.add_variable(space, 'temperature', 0)
-# temperature.set_writable()
-
 for par in PARAMS:
-    val_params[par] = params.add_variable(space, '{}'.format(par), 0)
+    par_name = par.split('_')[0]
+    val_params[par_name] = params.add_variable(space, '{}'.format(par), 0)
+    val_params[par_name].set_writable()
+
+test_data = pd.read_csv(r'C:\Users\miha-\Desktop\diplom_program\programs\test_datasets\test_dataset1.csv')\
+    .to_dict('records')
 
 # старт сервера
 try:
     server.start()
     print(f'Server is running at {URL}')
 
-    while True:
-
-        # print(temperature)
-        # val_temperature = randint(230, 280)
-        # temperature.set_value(val_temperature)
-        # print(val_temperature)
-        # print(temperature)
-
+    #while True:
+    for idx in range(len(test_data)):
+        
+        test_params = test_data[idx].keys()
         for par in val_params:
-            val_par = randint(230, 500)
-            val_params[par].set_value(val_par)
-            print(par, val_par, val_params[par])
+            if par in test_params:
+                val_par = test_data[idx][par]
+                val_params[par].set_value(val_par)
+                print(par, val_par, val_params[par])
+            else:
+                continue
 
-        # sleep(10)
+        sleep(10)
 finally:
     server.stop()
