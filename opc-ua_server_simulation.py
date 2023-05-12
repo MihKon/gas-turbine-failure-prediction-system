@@ -1,5 +1,6 @@
 import pandas as pd
 from opcua import Server
+from pathlib import Path
 from time import sleep
 from random import randint
 from database.crud import get_parameters_list
@@ -19,16 +20,19 @@ node = server.get_objects_node()
 
 params = node.add_object(space, 'Parameters')
 val_params = {}
-test_params = pd.read_csv(r'C:\Users\miha-\Desktop\diplom_program\programs\test_datasets\test_dataset1.csv')\
-    .to_dict().keys()
+
+path = Path(__file__)
+parent = str(path.parent.parent.absolute())
+path_to_file = ''.join([parent, '\\test_datasets\\test_dataset1.csv'])
+
+test_params = pd.read_csv(path_to_file).to_dict().keys()
 
 for par in test_params:
     par_name = par.split('_')[0]
     val_params[par_name] = params.add_variable(space, '{}'.format(par), 0)
     val_params[par_name].set_writable()
 
-test_data = pd.read_csv(r'C:\Users\miha-\Desktop\diplom_program\programs\test_datasets\test_dataset1.csv')\
-    .to_dict('records')
+test_data = pd.read_csv(path_to_file).to_dict('records')
 
 # старт сервера
 try:
