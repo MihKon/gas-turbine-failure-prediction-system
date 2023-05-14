@@ -1,6 +1,5 @@
 import pandas as pd
 from collections import defaultdict
-from sklearn.preprocessing import MinMaxScaler
 from database import crud
 from datetime import datetime
 from pathlib import Path
@@ -24,16 +23,10 @@ frame = pd.DataFrame(data=data, dtype='float64')
 # удаление нулевых значений
 frame.dropna(inplace=True)
 
-# нормализация данных
-scaler = MinMaxScaler()
-final_frame = pd.DataFrame(data=scaler.fit_transform(frame),
-                           index=frame.index,
-                           columns=frame.columns)
-
 path = Path(__file__)
 parent = str(path.parent.parent.absolute())
 directory = ''.join([parent, '\\datasets_to_predict'])
 file_name = '\\dataset_{}.csv'.format(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
 path_to_file = ''.join([directory, file_name])
 
-final_frame.to_csv(path_to_file, index=False)
+frame.to_csv(path_to_file, index=False)
