@@ -1,35 +1,87 @@
 import os
+import glob
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from pathlib import Path
-from database import crud
+from datetime import datetime
 
+
+DATASET_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\datasets_to_predict'])
 PREDICTS_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\predicts'])
-IMAGE_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\predict_images'])
-
-print(IMAGE_DIRECTORY)
+IMAGE_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\predicts_images'])
 
 
-def get_current_predict():
+def get_current_file(directory):
     dataset_file = ''
 
-    files = os.listdir(PREDICTS_DIRECTORY)
+    files = glob.glob(directory + '\\' + '*.csv')
     if files:
-        lst_files = [os.path.join(PREDICTS_DIRECTORY, file) for file in files]
-        files = [file for file in lst_files if os.path.isfile(file)]
-        dataset_file = max(files, os.path.getctime)
+        files = sorted(files, key=os.path.getctime)
+        dataset_file = files[-1]
     
     return dataset_file
 
 
-def plot_predicts(param_row):
-    plt.plot(param_row)
-    pass
+def create_time_steps(length):
+  return list(range(-length, 0))
 
-predicts = get_current_predict()
+
+def plot_predicts(predict_data, past_data, param):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(15, 7)
+
+    n_past = create_time_steps(len(past_data))
+    n_target = len(predict_data)
+
+    ax.plot(n_past, past_data,
+             label='Данные наблюдаемого периода',
+             color='steelblue', marker='o')
+    
+    ax.plot(np.arange(n_target),
+             predict_data,
+             color='orange', marker='o',
+             label='Предсказанные значения прогнозируемого периода'.format(param))
+    
+    ax.set_title('Прогнозирование показаний параметра {}'.format(param))
+    ax.set_ylabel('Значение')
+    ax.set_xlabel('Периоды, час')
+
+    x_start, x_end = (int(axe) for axe in ax.get_xlim())
+    ax.xaxis.set_ticks(np.arange(x_start, x_end, 2))
+
+    y_start, y_end = (int(axe) for axe in ax.get_ylim())
+    ax.yaxis.set_ticks(np.arange(y_start, y_end, 30))
+
+    ax.legend(loc='upper left')
+    ax.grid(which = "both")
+    ax.minorticks_on()
+    ax.tick_params(which = "minor", bottom = False, left = False)
+    
+    directory_to_save = ''.join(
+        [
+            IMAGE_DIRECTORY,
+            '\\{}'.format(datetime.now().strftime('%Y_%m_%d_%H_%M_%S'))
+        ]
+    )
+
+    if not os.path.exists(directory_to_save):
+        os.makedirs(directory_to_save)
+
+    path_to_save = ''.join([directory_to_save, '\\{}_predict.png'.format(param)])
+    fig.savefig(path_to_save)
+    
+    # plt.show()
+
+
+predicts = get_current_file(PREDICTS_DIRECTORY)
 pred_frame = pd.read_csv(predicts)
+pred_frame.dropna(axis=1, inplace=True)
+print(pred_frame)
 
-for pred in predicts.columns:
-    pass
+data = get_current_file(DATASET_DIRECTORY)
+dataframe = pd.read_csv(data)
+print(dataframe)
 
-
+for param in pred_frame.columns:
+    plot_predicts(pred_frame[param].values, dataframe[param].values, param)

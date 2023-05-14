@@ -47,9 +47,9 @@ def predict_params(data, parameter, hours, scaler):
     
     try:
         model_path = crud.get_model_by_title(model_title).path_to_file
-        # print('Модель найдена!', model_path)
+        print('Модель найдена!', model_path)
     except:
-        # print('Модель для данного параметра не найдена!', parameter)
+        print('Модель для данного параметра не найдена', parameter)
         return
     
     predict_model = tf.keras.models.load_model(model_path)
@@ -85,4 +85,4 @@ for par, val in predicts_24h.items():
 
 pred_frame = pd.DataFrame(predicts_24h)
 pred_frame.to_csv('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\predicts\predict_dataset_{}.csv'\
-                  .format(datetime.now().strftime('%Y_%m_%d_%H_%M_%S')))
+                  .format(datetime.now().strftime('%Y_%m_%d_%H_%M_%S')), index=False)
