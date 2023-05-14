@@ -40,15 +40,20 @@ try:
     print(f'Server is running at {URL}')
 
     #while True:
-    for idx in range(len(test_data[:5])):
+    for idx in range(len(test_data[:24])):
         
         for par in val_params:
             val_par = test_data[idx][par]
             val_params[par].set_value(val_par)
             print(par, val_par, val_params[par])
 
-        print('\n', 'cycle_num:', idx)
-        sleep(10)
+        print('\n', 'cycle_num:', idx+1)
+        sleep(5.5)
+
+except:
+    server.stop()
+    print('Сервер закрыт')
 
 finally:
     server.stop()
+    print('Сервер закрыт')

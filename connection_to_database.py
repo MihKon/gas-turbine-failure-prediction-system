@@ -78,17 +78,16 @@ finally:
 '''
 
 
-def set_layer_weights(weight, lr_name, idx, i, model):
+def set_layer_weights(weight, lr_name, idx, model):
     if type(weight) is np.ndarray:
         for wght in weight:
-            idx, i = set_layer_weights(wght, lr_name, idx, i, model)
+            idx = set_layer_weights(wght, lr_name, idx, model)
     else:
         title = '{}_w{}'.format(lr_name, idx)
-        crud.create_predict_params(i, title, weight, model)
+        crud.create_predict_params(title, weight, model)
         idx += 1
-        i += 1
     
-    return idx, i
+    return idx
 
 
 path_to_file = 'C:\\Users\\miha-\\Desktop\\diplom_program\\models\\Compressor T5 average_24.h5'
@@ -100,14 +99,7 @@ print(param)
 model = tf.keras.models.load_model(path_to_file)
 model_id = crud.get_model_by_title(model_title).id_model
 
-i = 1
 for lr in model.layers:
     idx = 1
     for w in lr.get_weights():
-        if type(w) is np.ndarray:
-            idx, i = set_layer_weights(w, lr.name, idx, i, model_id)
-        else:
-            title = '{}_w{}'.format(lr.name, idx)
-            crud.create_predict_params(i, title, w, model_id)
-            idx += 1
-            i += 1
+        set_layer_weights(w, lr.name, idx, model_id)

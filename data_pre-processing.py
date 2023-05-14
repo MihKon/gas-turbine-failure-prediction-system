@@ -1,12 +1,12 @@
 import pandas as pd
-import numpy as np
 from collections import defaultdict
 from sklearn.preprocessing import MinMaxScaler
 from database import crud
 from datetime import datetime
 from pathlib import Path
 
-measurings = crud.get_measurings(39*5)
+PAST = 24
+measurings = crud.get_measurings(PAST)
 
 data = defaultdict(list) # словарь списков
 

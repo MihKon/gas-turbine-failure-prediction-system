@@ -50,8 +50,8 @@ def get_parameter_by_part_name(name: str):
     return get_parameter_by_name(par_name)
 
 
-def get_measurings(limit: int = PARAMS_NUM):
-    return models.Measurings.select().limit(limit).order_by(
+def get_measurings(limit: int = 1):
+    return models.Measurings.select().limit(PARAMS_NUM*limit).order_by(
         models.Measurings.id_measuring.desc()
     ).dicts()
 
@@ -120,13 +120,11 @@ def get_predict_params():
     ).dicts()
 
 
-def create_predict_params(id: int,
-                          title: str,
+def create_predict_params(title: str,
                           value: float,
                           model_id: int):
     
     models.PredictParams.create(
-        id_predict_param=id,
         param_title=title,
         param_value=value,
         id_model=model_id
