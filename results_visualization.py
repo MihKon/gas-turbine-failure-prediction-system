@@ -69,7 +69,7 @@ def plot_predicts(predict_data, past_data, param):
         os.makedirs(directory_to_save)
 
     path_to_save = ''.join([directory_to_save, '\\{}_predict.png'.format(param)])
-    fig.savefig(path_to_save)
+    fig.savefig(path_to_save, bbox_inches='tight')
     
     # plt.show()
 
