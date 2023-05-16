@@ -56,6 +56,21 @@ def get_measurings(limit: int = 1):
     ).dicts()
 
 
+def get_measuring_by_par(param_id: int = None,
+                         par_name: str = None):
+    
+    if param_id is None and par_name is not None:
+        param_id = get_parameter_by_part_name(par_name).id_parameter
+
+    measurings = models.Measurings.select().where(
+        models.Measurings.id_parameter == param_id
+    ).order_by(models.Measurings.time_measuring.desc()).limit(1)
+
+    measuring = measurings[-1]
+
+    return measuring
+
+
 def create_measuring(param_value: float,
                      param_id: int = None,
                      param_name: str = None,
@@ -138,16 +153,22 @@ def get_predicts():
 
 
 def create_predict(verd: int,
-                   infl: int,
                    measur_id: int,
-                   param_id: int,
-                   model_id: int):
+                   param_id: int = None,
+                   param_name: str = None,
+                   model_id: int = None,
+                   model_title: str = None):
+    
+    if param_id is None and param_name is not None:
+        param_id = get_parameter_by_part_name(param_name).id_parameter
+
+    if model_id is None and model_title is not None:
+        model_id = get_model_by_title(model_title).id_model
 
     models.Predicts.create(
         predict_time=datetime.now(),
         deviation=0,
         verdict=verd,
-        influence=infl,
         id_measuring=measur_id,
         id_parameter=param_id,
         id_model=model_id

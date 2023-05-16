@@ -4,7 +4,7 @@ from database import crud
 from datetime import datetime
 from pathlib import Path
 
-PAST = 24
+PAST = 96
 measurings = crud.get_measurings(PAST)
 
 data = defaultdict(list) # словарь списков

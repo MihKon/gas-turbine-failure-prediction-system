@@ -29,7 +29,7 @@ def create_time_steps(length):
 
 def plot_predicts(predict_data, past_data, param):
     fig, ax = plt.subplots()
-    fig.set_size_inches(15, 7)
+    fig.set_size_inches(50, 15)
 
     n_past = create_time_steps(len(past_data))
     n_target = len(predict_data)
@@ -43,9 +43,9 @@ def plot_predicts(predict_data, past_data, param):
              color='orange', marker='o',
              label='Предсказанные значения прогнозируемого периода'.format(param))
     
-    ax.set_title('Прогнозирование показаний параметра {}'.format(param))
-    ax.set_ylabel('Значение')
-    ax.set_xlabel('Периоды, час')
+    ax.set_title('Прогнозирование показаний параметра {}'.format(param), size=25)
+    ax.set_ylabel('Значение', size=22)
+    ax.set_xlabel('Периоды, час', size=22)
 
     x_start, x_end = (int(axe) for axe in ax.get_xlim())
     ax.xaxis.set_ticks(np.arange(x_start, x_end, 2))
@@ -57,6 +57,9 @@ def plot_predicts(predict_data, past_data, param):
     ax.grid(which = "both")
     ax.minorticks_on()
     ax.tick_params(which = "minor", bottom = False, left = False)
+
+    plt.xticks(size=18)
+    plt.yticks(size=22)
     
     directory_to_save = ''.join(
         [

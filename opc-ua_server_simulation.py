@@ -8,6 +8,7 @@ from database.crud import get_parameters_list
 URL = 'opc.tcp://localhost:8001/opcua/server/'
 URI = 'http://gas-turbine-power-plant'
 PARAMS = get_parameters_list()
+PAST = 72
 
 server = Server()
 
@@ -23,7 +24,7 @@ val_params = {}
 
 path = Path(__file__)
 parent = str(path.parent.parent.absolute())
-path_to_file = ''.join([parent, '\\test_datasets\\test_dataset1.csv'])
+path_to_file = ''.join([parent, '\\test_datasets\\test_dataset2.csv'])
 
 test_params = pd.read_csv(path_to_file).to_dict().keys()
 
@@ -40,15 +41,15 @@ try:
     print(f'Server is running at {URL}')
 
     #while True:
-    for idx in range(len(test_data[:24])):
+    for idx in range(PAST, PAST+24+1):
         
         for par in val_params:
-            val_par = test_data[idx][par]
+            val_par = test_data[-idx][par]
             val_params[par].set_value(val_par)
             print(par, val_par, val_params[par])
 
-        print('\n', 'cycle_num:', idx+1)
-        sleep(5.5)
+        print('\n', 'cycle_num:', idx)
+        sleep(5.3)
 
 except:
     server.stop()

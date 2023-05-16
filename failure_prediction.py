@@ -78,10 +78,10 @@ for parameter in data.columns:
 for par, val in predicts_24h.items():
     if predicts_24h[par] is not None:
         for v in val:
-            measure_id = crud.get_measuring_by_value_and_par(v, par)
+            measure_id = crud.get_measuring_by_par(par_name=par).id_measuring
             par_id = crud.get_parameter_by_part_name(par).id_parameter
             model_id = crud.get_model_by_title('{}_24.h5'.format(par)).id_model
-            crud.create_predict(v, 50, measure_id, par_id, model_id)
+            crud.create_predict(verd=v, measur_id=measure_id, param_id=par_id, model_id=model_id)
 
 pred_frame = pd.DataFrame(predicts_24h)
 pred_frame.to_csv('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\predicts\predict_dataset_{}.csv'\
