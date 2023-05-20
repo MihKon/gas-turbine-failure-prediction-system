@@ -6,6 +6,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QFont
 from PyQt6.QtWidgets import (
     QApplication,
+    QSizePolicy,
+    QLayout,
     QLabel,
     QMainWindow,
     QPushButton,
@@ -24,12 +26,15 @@ from PyQt6.QtWidgets import (
     QStatusBar
 )
 from database import crud
+from pathlib import Path
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 matplotlib.use('QtAgg')
 
 PARAMS = crud.get_parameters_list()
+DATASET_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\datasets_to_predict'])
+PREDICTS_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\predicts'])
 
 
 class MplCanvas(FigureCanvasQTAgg):
@@ -44,20 +49,14 @@ class FrameButton(QPushButton):
     def __init__(self, *args, **kwargs):
         QPushButton.__init__(self, *args, **kwargs)
 
-        if self.parent is None:
-            self.frame = QFrame(self)
-        else:
-            self.frame = QFrame(self.parent)
+        self.frame = QFrame(self)
         self.frame.setFrameShape(QFrame.Shape.Panel)
         self.frame.setFrameShadow(QFrame.Shadow.Raised)
-        self.frame.setLineWidth(4)
+        self.frame.setLineWidth(8)
 
     def resizeEvent(self, event):
         self.frame.resize(self.size())
         QWidget.resizeEvent(self, event)
-
-    def show_image(self):
-        pass
 
 
 class MainWindow(QMainWindow):
@@ -70,62 +69,53 @@ class MainWindow(QMainWindow):
 
         self.page_layout = QHBoxLayout()
         self.param_layout = QVBoxLayout()
-        #self.param_layout.setGeometry(QtCore.QRect(0, 0, 300, 1020))
-        
-        self.graphics_layout = QVBoxLayout()
+        self.param_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         self.image_layout = QStackedLayout()
 
-        # self.frame_params = QFrame(self.param_widget)
-        # self.frame_params.setFrameShape(QFrame.Shape.Panel)
-        # self.frame_params.setFrameShadow(QFrame.Shadow.Raised)
-        # self.frame_params.setLineWidth(2)
-
-        group = QButtonGroup(self.param_widget)
+        buttons = QButtonGroup(self.param_widget)
 
         for i in range(len(PARAMS)):
             name = PARAMS[i].split('_')[0]
-            # frame_2 = QFrame(self.frame_params)
-            # frame_2.setFrameShape(QFrame.Shape.Panel)
-            # frame_2.setFrameShadow(QFrame.Shadow.Raised)
-            # frame_2.setLineWidth(4)
-            # frame_2.setGeometry(QtCore.QRect(10, i*150, 210, 110))
 
-            button = QPushButton(name, self.param_widget)
+            button = QPushButton(name)
             button.setCheckable(True)
-            button.setGeometry(QtCore.QRect(0, 0, 210, 110))
+            button.setFixedSize(210, 110)
             button.clicked.connect(self.the_button_was_clicked)
             button.move(10, i*120)
-            group.addButton(button)
+
+            font = QFont()
+            font.setPointSize(12)
+
+            buttons.addButton(button)
+            self.param_layout.addWidget(button)
             
-        #self.param_layout.addWidget()
-            # param_layout.addStretch(1)
-
-        # btn = FrameButton('test 1')
-
-        # sc = MplCanvas(self, width=5, height=4, dpi=100)
-        # image = mpimg.imread('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\predicts_images\\Compressor T5 average_predict.png')
-        # sc.axes.imshow(image)
-        # graphics_layout.addWidget(sc)
         scroll = QScrollArea()
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setWidgetResizable(True)
+
+        self.param_widget.setLayout(self.param_layout)
         scroll.setWidget(self.param_widget)
+        scroll.setFixedWidth(250)
 
-        self.param_layout.addWidget(scroll)
-
-        self.page_layout.addLayout(self.param_layout)
-        self.page_layout.addLayout(self.graphics_layout)
+        self.page_layout.addWidget(scroll)
+        self.page_layout.addLayout(self.image_layout)
 
         widget = QWidget(self)
         widget.setLayout(self.page_layout)
         self.setCentralWidget(widget)
 
     def the_button_was_clicked(self):
+        sc = MplCanvas(self, width=5, height=4, dpi=100)
+        image = mpimg.imread('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\predicts_images\\Compressor T5 average_predict.png')
+        sc.axes.imshow(image)
+        graphics_layout = QVBoxLayout()
+        self.image_layout.addWidget(sc)
         print('Clicked!')
 
 
 app = QApplication(sys.argv)
+app.setStyleSheet(Path('style.qss').read_text())
 
 window = MainWindow()
 #window.showMaximized()
