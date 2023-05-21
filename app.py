@@ -1,6 +1,11 @@
 import sys
 import matplotlib
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import glob
+import os
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QFont
@@ -26,11 +31,15 @@ from PyQt6.QtWidgets import (
     QStatusBar
 )
 from database import crud
+from functools import partial
 from pathlib import Path
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+from matplotlib.widgets import Cursor
 matplotlib.use('QtAgg')
+plt.style.use('_classic_test_patch')
+matplotlib.rcParams['font.size'] = 7
 
 PARAMS = crud.get_parameters_list()
 DATASET_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\datasets_to_predict'])
@@ -40,9 +49,24 @@ PREDICTS_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\p
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+        #self.fig = Figure(figsize=(width, height))
+        #self.fig.tight_layout(pad=5.0)
+        # plt.xticks(fontsize=7)
+        # plt.yticks(fontsize=7)
+        self.fig, self.axes = plt.subplots(nrows=4,
+                                           ncols=1,
+                                           gridspec_kw={'height_ratios': [5, 5, 2, 2]},
+                                           figsize=(width, height),
+                                           layout='constrained')
+        # self.fig, self.ax = plt.subplots(figsize=(width, height))
+        # self.fig.subplots_adjust(left=0.1,
+        #                          bottom=0.1,
+        #                          right=0.9,
+        #                          top=0.9,
+        #                          wspace=0.4,
+        #                          hspace=0.4)
+        #self.axes = self.fig.subplots(nrows=4, ncols=1, figsize=(10, 7))
+        super(MplCanvas, self).__init__(self.fig)
 
 
 class FrameButton(QPushButton):
@@ -78,9 +102,10 @@ class MainWindow(QMainWindow):
             name = PARAMS[i].split('_')[0]
 
             button = QPushButton(name)
+            button.setObjectName(name)
             button.setCheckable(True)
             button.setFixedSize(210, 110)
-            button.clicked.connect(self.the_button_was_clicked)
+            button.clicked.connect(partial(self.the_button_was_pressed, btn=button))
             button.move(10, i*120)
 
             font = QFont()
@@ -105,13 +130,79 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.page_layout)
         self.setCentralWidget(widget)
 
-    def the_button_was_clicked(self):
-        sc = MplCanvas(self, width=5, height=4, dpi=100)
-        image = mpimg.imread('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\predicts_images\\Compressor T5 average_predict.png')
-        sc.axes.imshow(image)
+    def the_button_was_pressed(self, btn: QPushButton):
+        param = btn.objectName()
+        predict = pd.read_csv(self.get_current_dataset(PREDICTS_DIRECTORY))
+        dataset = pd.read_csv(self.get_current_dataset(DATASET_DIRECTORY))
+        test_dataset = pd.read_csv('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\test_datasets\\test_dataset1.csv')
+        y_pred = predict[param].values
+        y_test = test_dataset[param][-24:].values
+        y_past = dataset[param].values
+
+        sc = MplCanvas(self, width=20, height=10)
+        toolbar = NavigationToolbar(sc)
+
+        sc.axes[0].plot(list(range(-len(y_past), 0)), y_past,
+                        label='Данные наблюдаемого периода',
+                        color='steelblue', marker='.', linewidth=0.7)
+    
+        sc.axes[0].plot(np.arange(len(y_pred)),
+                        y_pred,
+                        color='orange', marker='.', linewidth=0.7,
+                        label='Предсказанные значения прогнозируемого периода'.format(param))
+        
+        sc.axes[1].plot(np.arange(len(y_test)), y_test,
+                        label='Данные наблюдаемого периода',
+                        color='steelblue', marker='.', linewidth=0.7)
+    
+        sc.axes[1].plot(np.arange(len(y_pred)),
+                        y_pred,
+                        color='orange', marker='.', linewidth=0.7,
+                        label='Предсказанные значения прогнозируемого периода'.format(param))
+        
+        sc.axes[2].plot(np.arange(len(y_test)), y_test,
+                        label='Данные наблюдаемого периода',
+                        color='steelblue', marker='.', linewidth=0.7)
+    
+        sc.axes[3].plot(np.arange(len(y_pred)),
+                        y_pred,
+                        color='orange', marker='.', linewidth=0.7,
+                        label='Предсказанные значения прогнозируемого периода'.format(param))
+        
+        for ax in sc.axes:
+            #ax.legend(loc='upper left')
+            ax.grid(which='both', linewidth='0.2', color='grey')
+            ax.minorticks_on()
+            ax.tick_params(which='minor', bottom=False, left=False, grid_linewidth=0.2)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['left'].set_visible(False)
+            # ax.set_ylabel('Значение', size=7)
+            # ax.set_xlabel('Периоды, час', size=7)
+
         graphics_layout = QVBoxLayout()
-        self.image_layout.addWidget(sc)
+        graphics_layout.addWidget(toolbar)
+        graphics_layout.addWidget(sc)
+
+        graphics_widget = QWidget()
+        graphics_widget.setLayout(graphics_layout)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+
+        scroll.setWidget(graphics_widget)
+        self.image_layout.addWidget(scroll)
         print('Clicked!')
+
+    def get_current_dataset(self, directory):
+        dataset_file = ''
+
+        files = glob.glob(directory + '\\' + '*.csv')
+        if files:
+            files = sorted(files, key=os.path.getctime)
+            dataset_file = files[-1]
+
+        return dataset_file
 
 
 app = QApplication(sys.argv)

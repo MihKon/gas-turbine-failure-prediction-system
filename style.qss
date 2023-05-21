@@ -1,0 +1,14 @@
+QMainWindow {
+    background-color: azure;
+}
+QPushButton {
+    background-color: azure;
+    color: black;
+    font-weight: 500;
+    border: 2px solid aqua;
+}
+QPushButton:hover,
+QPushButton:focus {
+    background-color: aqua;
+    border: 3px solid #9ac3fe;
+}
