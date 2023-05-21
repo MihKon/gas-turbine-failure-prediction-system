@@ -1,10 +1,15 @@
 QMainWindow {
     background-color: azure;
 }
+QLabel {
+    font-weight: bold;
+    color: gray;
+    text-align: justify;
+}
 QPushButton {
     background-color: azure;
-    color: black;
-    font-weight: 500;
+    color: gray;
+    font-weight: bold;
     border: 2px solid aqua;
 }
 QPushButton:hover,

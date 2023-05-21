@@ -1,17 +1,14 @@
 import sys
 import matplotlib
-import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import glob
 import os
-from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QFont
+from PyQt6.QtGui import QPixmap, QFont, QAction
 from PyQt6.QtWidgets import (
     QApplication,
-    QSizePolicy,
     QLayout,
     QLabel,
     QMainWindow,
@@ -21,22 +18,16 @@ from PyQt6.QtWidgets import (
     QStackedLayout,
     QToolBar,
     QWidget,
-    QMenuBar,
-    QMenu,
     QFrame,
-    QSplitter,
     QButtonGroup,
-    QGroupBox,
     QScrollArea,
-    QStatusBar
+    QFileDialog
 )
 from database import crud
 from functools import partial
 from pathlib import Path
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
-from matplotlib.widgets import Cursor
 matplotlib.use('QtAgg')
 plt.style.use('_classic_test_patch')
 matplotlib.rcParams['font.size'] = 7
@@ -44,28 +35,16 @@ matplotlib.rcParams['font.size'] = 7
 PARAMS = crud.get_parameters_list()
 DATASET_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\datasets_to_predict'])
 PREDICTS_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\predicts'])
+IMAGE_DIRECTORY = ''.join([str(Path(__file__).parent.parent.absolute()), '\\predicts_images'])
 
 
 class MplCanvas(FigureCanvasQTAgg):
-
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        #self.fig = Figure(figsize=(width, height))
-        #self.fig.tight_layout(pad=5.0)
-        # plt.xticks(fontsize=7)
-        # plt.yticks(fontsize=7)
         self.fig, self.axes = plt.subplots(nrows=4,
                                            ncols=1,
                                            gridspec_kw={'height_ratios': [5, 5, 2, 2]},
                                            figsize=(width, height),
                                            layout='constrained')
-        # self.fig, self.ax = plt.subplots(figsize=(width, height))
-        # self.fig.subplots_adjust(left=0.1,
-        #                          bottom=0.1,
-        #                          right=0.9,
-        #                          top=0.9,
-        #                          wspace=0.4,
-        #                          hspace=0.4)
-        #self.axes = self.fig.subplots(nrows=4, ncols=1, figsize=(10, 7))
         super(MplCanvas, self).__init__(self.fig)
 
 
@@ -81,6 +60,17 @@ class FrameButton(QPushButton):
     def resizeEvent(self, event):
         self.frame.resize(self.size())
         QWidget.resizeEvent(self, event)
+
+
+class AnotherWindow(QWidget):
+    def __init__(self, image):
+        super().__init__()
+        layout = QVBoxLayout()
+        self.label = QLabel("Another Window")
+        pixmap = QPixmap(image[0])
+        layout.addWidget(self.label)
+        self.label.setPixmap(QPixmap(pixmap))
+        self.setLayout(layout)
 
 
 class MainWindow(QMainWindow):
@@ -100,8 +90,9 @@ class MainWindow(QMainWindow):
 
         for i in range(len(PARAMS)):
             name = PARAMS[i].split('_')[0]
+            print(name)
 
-            button = QPushButton(name)
+            button = QPushButton()
             button.setObjectName(name)
             button.setCheckable(True)
             button.setFixedSize(210, 110)
@@ -109,7 +100,14 @@ class MainWindow(QMainWindow):
             button.move(10, i*120)
 
             font = QFont()
-            font.setPointSize(12)
+            font.setBold(True)
+            font.setPointSize(15)
+
+            btn_lt = QHBoxLayout(button)
+            label = QLabel(name, button)
+            label.setFont(font)
+            label.setWordWrap(True)
+            btn_lt.addWidget(label, 0, Qt.AlignmentFlag.AlignCenter)
 
             buttons.addButton(button)
             self.param_layout.addWidget(button)
@@ -125,6 +123,20 @@ class MainWindow(QMainWindow):
 
         self.page_layout.addWidget(scroll)
         self.page_layout.addLayout(self.image_layout)
+
+        toolbar = QToolBar('My main toolbar')
+        self.addToolBar(toolbar)
+
+        button_action = QAction('Обновить', self)
+        button_action.setStatusTip('Кнопка обновления прогнозов')
+        button_action.triggered.connect(partial(self.update_predicts, btns=buttons))
+
+        file_btn = QAction('Открыть', self)
+        file_btn.setStatusTip('Кнопка обзора изображений прогнозов')
+        file_btn.triggered.connect(self.browse_images)
+
+        toolbar.addAction(button_action)
+        toolbar.addAction(file_btn)
 
         widget = QWidget(self)
         widget.setLayout(self.page_layout)
@@ -143,42 +155,33 @@ class MainWindow(QMainWindow):
         toolbar = NavigationToolbar(sc)
 
         sc.axes[0].plot(list(range(-len(y_past), 0)), y_past,
-                        label='Данные наблюдаемого периода',
                         color='steelblue', marker='.', linewidth=0.7)
     
         sc.axes[0].plot(np.arange(len(y_pred)),
                         y_pred,
-                        color='orange', marker='.', linewidth=0.7,
-                        label='Предсказанные значения прогнозируемого периода'.format(param))
+                        color='orange', marker='.', linewidth=0.7,)
         
         sc.axes[1].plot(np.arange(len(y_test)), y_test,
-                        label='Данные наблюдаемого периода',
                         color='steelblue', marker='.', linewidth=0.7)
     
         sc.axes[1].plot(np.arange(len(y_pred)),
                         y_pred,
-                        color='orange', marker='.', linewidth=0.7,
-                        label='Предсказанные значения прогнозируемого периода'.format(param))
+                        color='orange', marker='.', linewidth=0.7)
         
         sc.axes[2].plot(np.arange(len(y_test)), y_test,
-                        label='Данные наблюдаемого периода',
                         color='steelblue', marker='.', linewidth=0.7)
     
         sc.axes[3].plot(np.arange(len(y_pred)),
                         y_pred,
-                        color='orange', marker='.', linewidth=0.7,
-                        label='Предсказанные значения прогнозируемого периода'.format(param))
+                        color='orange', marker='.', linewidth=0.7)
         
         for ax in sc.axes:
-            #ax.legend(loc='upper left')
             ax.grid(which='both', linewidth='0.2', color='grey')
             ax.minorticks_on()
             ax.tick_params(which='minor', bottom=False, left=False, grid_linewidth=0.2)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.spines['left'].set_visible(False)
-            # ax.set_ylabel('Значение', size=7)
-            # ax.set_xlabel('Периоды, час', size=7)
 
         graphics_layout = QVBoxLayout()
         graphics_layout.addWidget(toolbar)
@@ -187,12 +190,7 @@ class MainWindow(QMainWindow):
         graphics_widget = QWidget()
         graphics_widget.setLayout(graphics_layout)
 
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-
-        scroll.setWidget(graphics_widget)
-        self.image_layout.addWidget(scroll)
-        print('Clicked!')
+        self.image_layout.addWidget(graphics_widget)
 
     def get_current_dataset(self, directory):
         dataset_file = ''
@@ -203,13 +201,26 @@ class MainWindow(QMainWindow):
             dataset_file = files[-1]
 
         return dataset_file
+    
+    def update_predicts(self, btns: QButtonGroup):
+        print('update')
+        for btn in btns.buttons():
+            btn.setEnabled(False)
+            btn.setEnabled(True)
+
+    def browse_images(self):
+        dialog = QFileDialog(self)
+        image_path = dialog.getOpenFileName(self, 'Open files', IMAGE_DIRECTORY, 'Images (*.png *.jpg)')
+        if image_path:
+            self.new_window = AnotherWindow(image_path)
+            self.new_window.show()
 
 
 app = QApplication(sys.argv)
 app.setStyleSheet(Path('style.qss').read_text())
 
 window = MainWindow()
-#window.showMaximized()
+window.showMaximized()
 window.show()
 
 app.exec()
