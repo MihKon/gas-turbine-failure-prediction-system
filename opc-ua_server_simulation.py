@@ -40,7 +40,7 @@ try:
     server.start()
     print(f'Server is running at {URL}')
 
-    #while True:
+    # while True:
     for idx in range(PAST, PAST+24+1):
         
         for par in val_params:

@@ -36,11 +36,11 @@ def plot_predicts(predict_data, past_data, param):
 
     ax.plot(n_past, past_data,
              label='Данные наблюдаемого периода',
-             color='steelblue', marker='o')
+             color='steelblue', marker='.')
     
     ax.plot(np.arange(n_target),
              predict_data,
-             color='orange', marker='o',
+             color='orange', marker='.',
              label='Предсказанные значения прогнозируемого периода'.format(param))
     
     ax.set_title('Прогнозирование показаний параметра {}'.format(param), size=25)
@@ -54,9 +54,9 @@ def plot_predicts(predict_data, past_data, param):
     ax.yaxis.set_ticks(np.arange(y_start, y_end, 30))
 
     ax.legend(loc='upper left')
-    ax.grid(which = "both")
+    ax.grid(which='both')
     ax.minorticks_on()
-    ax.tick_params(which = "minor", bottom = False, left = False)
+    ax.tick_params(which='minor', bottom=False, left=False)
 
     plt.xticks(size=18)
     plt.yticks(size=22)

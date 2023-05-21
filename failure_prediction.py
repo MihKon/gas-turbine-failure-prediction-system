@@ -84,5 +84,5 @@ for par, val in predicts_24h.items():
             crud.create_predict(verd=v, measur_id=measure_id, param_id=par_id, model_id=model_id)
 
 pred_frame = pd.DataFrame(predicts_24h)
-pred_frame.to_csv('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\predicts\predict_dataset_{}.csv'\
+pred_frame.to_csv('C:\\Users\\miha-\\Desktop\\diplom_program\\programs\\predicts\\predict_dataset_{}.csv'\
                   .format(datetime.now().strftime('%Y_%m_%d_%H_%M_%S')), index=False)

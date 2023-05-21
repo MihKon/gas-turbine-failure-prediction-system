@@ -9,10 +9,10 @@ PARAMS = crud.get_parameters_list()
 client = Client(URL)
 
 val_parameters = {}
-    
+
 try:
     cycle = 1
-      
+    
     while True:
         client.connect()
         root = client.get_root_node()

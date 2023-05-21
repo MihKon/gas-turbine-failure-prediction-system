@@ -7,7 +7,7 @@ from pathlib import Path
 PAST = 96
 measurings = crud.get_measurings(PAST)
 
-data = defaultdict(list) # словарь списков
+data = defaultdict(list)  # словарь списков
 
 for mes in reversed(measurings):
     par_id = mes['id_parameter']

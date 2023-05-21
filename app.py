@@ -90,7 +90,6 @@ class MainWindow(QMainWindow):
 
         for i in range(len(PARAMS)):
             name = PARAMS[i].split('_')[0]
-            print(name)
 
             button = QPushButton()
             button.setObjectName(name)
@@ -201,7 +200,7 @@ class MainWindow(QMainWindow):
             dataset_file = files[-1]
 
         return dataset_file
-    
+
     def update_predicts(self, btns: QButtonGroup):
         print('update')
         for btn in btns.buttons():
